@@ -1,5 +1,5 @@
 import tkinter as tk
-import datetime
+from datetime import *
 
 class MySmartClock:
     def __init__(self):
@@ -22,15 +22,22 @@ class MySmartClock:
         self.root.mainloop()
 
     def check_state(self):
+        if self.detected_change == True:
+            pass
+                
         if self.screen == "CurrentTime":
-            currtime = datetime.datetime.now()
-            currtime.strftime('%H:%M:%S')
-            time_label = tk.Label(fg="orange",bg="black",text=f"{currtime.hour}:{currtime.minute}:{currtime.second}",font=("Arial",50,"bold"))
-            time_label.grid(row=2,column=2)
+            currtime = datetime.now()
+            currtime = currtime.strftime('%H:%M:%S')
+            self.time_label = tk.Label(self.frame,fg="orange",bg="black",text=currtime,font=("Arial",50,"bold"))
+            self.time_label.grid(row=2,column=2)
         elif self.screen == "Stopwatch":
-            print ("at stopwatch")
+            self.stopwatch = tk.Label(self.frame,fg="orange",bg="black",text="00:00:00")
+            self.stopwatch.grid(row=3,column=4)
         elif self.screen == "Timer":
-            print ("at timer")
+            self.timer_label = tk.Label(self.frame,fg="orange",bg="black",text=f"00:00:00")
+            self.thirtysec = tk.Button(text="30s")
+            self.timer_label.grid(row=3,column=2)
+            self.thirtysec.grid(row=4,column=2)
         self.detected_change = False
         self.root.after(1000,self.check_state)
 

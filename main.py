@@ -1,5 +1,7 @@
 import tkinter as tk
-from datetime import *
+import datetime
+from datetime import time
+import time as Time
 
 class MySmartClock:
     def __init__(self):
@@ -7,14 +9,18 @@ class MySmartClock:
         self.root.geometry("900x500")
         self.root.title("Smart Clock")
         self.root.configure(bg="black")
-        self.frame = tk.Frame(self.root)
-        self.frame.grid()
-        self.TimerButton = tk.Button(self.frame, text="Timer",command=self.Timer)
-        self.StopwatchButton = tk.Button(self.frame, text="Stopwatch",command=self.Stopwatch)
-        self.CurrentTimeButton = tk.Button(self.frame, text="Current Time",command=self.ShowCurrentTime)
-        self.CurrentTimeButton.grid(row=4,column=1)
-        self.StopwatchButton.grid(row=4,column=2)
-        self.TimerButton.grid(row=4,column=3)
+        self.root.columnconfigure(0,weight=1)
+        self.root.columnconfigure(1,weight=1)
+        self.root.columnconfigure(2,weight=1)
+        self.root.rowconfigure(0,weight=1)
+        self.root.rowconfigure(1,weight=1)
+        self.root.rowconfigure(2,weight=1)
+        self.TimerButton = tk.Button(self.root, text="Timer",command=self.Timer)
+        self.StopwatchButton = tk.Button(self.root, text="Stopwatch",command=self.Stopwatch)
+        self.CurrentTimeButton = tk.Button(self.root, text="Current Time",command=self.ShowCurrentTime)
+        self.CurrentTimeButton.grid(row=2,column=0)
+        self.StopwatchButton.grid(row=2,column=1)
+        self.TimerButton.grid(row=2,column=2)
         self.screen = "CurrentTime"
         self.detected_change = False
         self.root.after(0,self.check_state)
@@ -23,21 +29,34 @@ class MySmartClock:
 
     def check_state(self):
         if self.detected_change == True:
-            pass
+            for widget in self.root.winfo_children():
+                widget.destroy()
+            self.TimerButton = tk.Button(self.root, text="Timer",command=self.Timer)
+            self.StopwatchButton = tk.Button(self.root, text="Stopwatch",command=self.Stopwatch)
+            self.CurrentTimeButton = tk.Button(self.root, text="Current Time",command=self.ShowCurrentTime)
+            self.CurrentTimeButton.grid(row=2,column=0)
+            self.StopwatchButton.grid(row=2,column=1)
+            self.TimerButton.grid(row=2,column=2)
                 
         if self.screen == "CurrentTime":
-            currtime = datetime.now()
+            currtime = datetime.datetime.now()
             currtime = currtime.strftime('%H:%M:%S')
-            self.time_label = tk.Label(self.frame,fg="orange",bg="black",text=currtime,font=("Arial",50,"bold"))
-            self.time_label.grid(row=2,column=2)
+            self.time_label = tk.Label(self.root,fg="orange",bg="black",text=currtime,font=("Arial",50,"bold"))
+            self.time_label.grid(row=1,column=1)
+            
         elif self.screen == "Stopwatch":
-            self.stopwatch = tk.Label(self.frame,fg="orange",bg="black",text="00:00:00")
-            self.stopwatch.grid(row=3,column=4)
+            self.StartStopwatch()
+            self.stopwatch = tk.Label(self.root,fg="orange",bg="black",text=self.newtime)
+            self.stopwatch.grid(row=1,column=1)
+            # self.start = tk.Button(self.root,text="START",command=self.StartStopwatch)
+            # self.start.grid(row=1,column=2)
+            
         elif self.screen == "Timer":
-            self.timer_label = tk.Label(self.frame,fg="orange",bg="black",text=f"00:00:00")
+            self.timer_label = tk.Label(self.root,fg="orange",bg="black",text=f"00:00:00")
             self.thirtysec = tk.Button(text="30s")
-            self.timer_label.grid(row=3,column=2)
-            self.thirtysec.grid(row=4,column=2)
+            self.timer_label.grid(row=1,column=1)
+            self.thirtysec.grid(row=2,column=1)
+            
         self.detected_change = False
         self.root.after(1000,self.check_state)
 
@@ -48,6 +67,16 @@ class MySmartClock:
     def Stopwatch(self):
         self.screen = "Stopwatch"
         self.detected_change = True
+        self.newtime = time(0,0,0)
+    def StartStopwatch(self):
+        seconds = self.newtime.hour * 3600 + self.newtime.minute * 60 + self.newtime.second
+        new_seconds = seconds + 1
+        new_hour = (new_seconds // 3600) % 24
+        new_minute = (new_seconds % 3600) // 60
+        new_second = new_seconds % 60
+        self.new_time = time(new_hour, new_minute, new_second)
+        print (f"here {self.new_time}")
+        
 
     def Timer(self):
         self.screen = "Timer"

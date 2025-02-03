@@ -57,15 +57,17 @@ class MySmartClock:
             
         elif self.screen == "Timer":
             self.timer_label = tk.Label(self.root,fg="orange",bg="black",text=self.timer_num)
-            self.start_timer = tk.Button(text="START",command=self.StartTimer)
-            self.stop_timer = tk.Button(text="STOP")
+            self.start_timer = tk.Button(text="START",command=lambda:self.SetTimer(False))
+            self.stop_timer = tk.Button(text="STOP",command=lambda:self.SetTimer(True))
             self.thirty_sec = tk.Button(text="30s",command=lambda: self.AddTime(30))
             self.one_min = tk.Button(text="1 min",command=lambda: self.AddTime(60))
+            self.reset_timer = tk.Button(text="RESET",command=self.ResetTimer)
             self.timer_label.grid(row=2,column=1,columnspan=3,sticky="nsew")
             self.start_timer.grid(row=2,column=0)
             self.stop_timer.grid(row=2,column=4)
             self.thirty_sec.grid(row=3,column=1)
             self.one_min.grid(row=3,column=2)
+            self.reset_timer.grid(row=3,column=3)
             
         self.detected_change = False
         self.root.after(1000,self.check_state)
@@ -91,6 +93,7 @@ class MySmartClock:
     def Timer(self):
         self.screen = "Timer"
         self.detected_change = True
+        self.stopped_timer = True
     def AddTime(self,add_seconds):
         seconds = self.timer_num.hour * 3600 + self.timer_num.minute * 60 + self.timer_num.second
         new_seconds = seconds + add_seconds
@@ -99,17 +102,24 @@ class MySmartClock:
         new_second = new_seconds % 60
         self.timer_num = time(new_hour,new_minute,new_second)
     def StartTimer(self):
-        total = self.timer_num.hour * 3600 + self.timer_num.minute * 60 + self.timer_num.second
-        if total <= 0:
-            messagebox.showinfo(message="Timer done!")
-        else:
-            if self.screen == "Timer":
-                total -= 1 #does not account for milliseconds yet
-                new_hour = (total // 3600) % 24
-                new_minute = (total  % 3600) // 60
-                new_second = total  % 60
-                self.timer_num = time(new_hour,new_minute,new_second)
-                self.root.after(1000,self.StartTimer) #no milliseconds
+        if self.stopped_timer == False:
+            total = self.timer_num.hour * 3600 + self.timer_num.minute * 60 + self.timer_num.second
+            if total <= 0:
+                messagebox.showinfo(message="Timer done!")
+            else:
+                if self.screen == "Timer":
+                    total -= 1 #does not account for milliseconds yet
+                    new_hour = (total // 3600) % 24
+                    new_minute = (total  % 3600) // 60
+                    new_second = total  % 60
+                    self.timer_num = time(new_hour,new_minute,new_second)
+                    self.root.after(1000,self.StartTimer) #no milliseconds
+    def SetTimer(self,bool):
+        if bool == False:
+            self.StartTimer()
+        self.stopped_timer = bool
+    def ResetTimer(self):
+        self.timer_num = time(0,0,0)
                 
 
 if __name__ == "__main__":

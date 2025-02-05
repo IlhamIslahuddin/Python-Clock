@@ -23,12 +23,13 @@ class MySmartClock:
         self.create_main_widgets()
         self.screen = "CurrentTime"
         self.detected_change = False
-        self.root.after(0,self.check_state)
+        self.check_state()
         
         self.root.mainloop()
         
     def create_main_widgets(self):
         self.timer_num = time(0,0,0)
+        self.newtime = time(0,0,0) #no milliseconds
         self.current_date = tk.Label(text=(datetime.date.today()).strftime("%d/%m/%Y"),font=("Arial",20,"bold"))
         self.current_date.grid(row=0,column=0,columnspan=3,sticky="nw",padx=20,pady=20)
         self.TimerButton = tk.Button(self.root, text="Timer",command=self.Timer)
@@ -47,27 +48,35 @@ class MySmartClock:
         if self.screen == "CurrentTime":
             currtime = datetime.datetime.now()
             currtime = currtime.strftime('%H:%M:%S')
-            self.time_label = tk.Label(self.root,fg="orange",bg="black",text=currtime,font=("Arial",50,"bold"))
-            self.time_label.grid(row=2,column=1,columnspan=3,sticky="nsew")
+            if self.detected_change == False:
+                self.time_label = tk.Label(self.root,fg="orange",bg="black",text=currtime,font=("Arial",50,"bold"))
+                self.time_label.grid(row=2,column=1,columnspan=3,sticky="nsew")
             
         elif self.screen == "Stopwatch":
-            self.StartStopwatch()
-            self.stopwatch = tk.Label(self.root,fg="orange",bg="black",text=self.newtime)
-            self.stopwatch.grid(row=2,column=1,columnspan=3,sticky="nsew")
+            if self.detected_change == False:
+                self.stopwatch = tk.Label(self.root,fg="orange",bg="black",text=self.newtime)
+                self.stopwatch.grid(row=2,column=1,columnspan=3,sticky="nsew")
+            else:
+                self.stopwatch_start_button = tk.Button(text="START",command=lambda: self.SetStopwatch(False))
+                self.stopwatch_start_button.grid(row=2,column=0)
+                self.stopwatch_stop_button = tk.Button(text="STOP",command=lambda: self.SetStopwatch(True))
+                self.stopwatch_stop_button.grid(row=2,column=4)
             
         elif self.screen == "Timer":
-            self.timer_label = tk.Label(self.root,fg="orange",bg="black",text=self.timer_num)
-            self.start_timer = tk.Button(text="START",command=lambda:self.SetTimer(False))
-            self.stop_timer = tk.Button(text="STOP",command=lambda:self.SetTimer(True))
-            self.thirty_sec = tk.Button(text="30s",command=lambda: self.AddTime(30))
-            self.one_min = tk.Button(text="1 min",command=lambda: self.AddTime(60))
-            self.reset_timer = tk.Button(text="RESET",command=self.ResetTimer)
-            self.timer_label.grid(row=2,column=1,columnspan=3,sticky="nsew")
-            self.start_timer.grid(row=2,column=0)
-            self.stop_timer.grid(row=2,column=4)
-            self.thirty_sec.grid(row=3,column=1)
-            self.one_min.grid(row=3,column=2)
-            self.reset_timer.grid(row=3,column=3)
+            if self.detected_change == False:
+                self.timer_label = tk.Label(self.root,fg="orange",bg="black",text=self.timer_num)
+                self.timer_label.grid(row=2,column=1,columnspan=3,sticky="nsew")
+            else:
+                self.start_timer = tk.Button(text="START",command=lambda:self.SetTimer(False))
+                self.stop_timer = tk.Button(text="STOP",command=lambda:self.SetTimer(True))
+                self.thirty_sec = tk.Button(text="30s",command=lambda: self.AddTime(30))
+                self.one_min = tk.Button(text="1 min",command=lambda: self.AddTime(60))
+                self.reset_timer = tk.Button(text="RESET",command=self.ResetTimer)
+                self.start_timer.grid(row=2,column=0)
+                self.stop_timer.grid(row=2,column=4)
+                self.thirty_sec.grid(row=3,column=1)
+                self.one_min.grid(row=3,column=2)
+                self.reset_timer.grid(row=3,column=3)
             
         self.detected_change = False
         self.root.after(1000,self.check_state)
@@ -79,15 +88,21 @@ class MySmartClock:
     def Stopwatch(self):
         self.screen = "Stopwatch"
         self.detected_change = True
-        self.newtime = time(0,0,0)
+        self.stopped_stopwatch = True
     def StartStopwatch(self):
-        seconds = self.newtime.hour * 3600 + self.newtime.minute * 60 + self.newtime.second
-        new_seconds = seconds + 1
-        new_hour = (new_seconds // 3600) % 24
-        new_minute = (new_seconds % 3600) // 60
-        new_second = new_seconds % 60
-        self.new_time = time(new_hour, new_minute, new_second)
-        print (f"here {self.new_time}")
+        if self.stopped_stopwatch == False:
+            if self.screen == "Stopwatch":
+                seconds = self.newtime.hour * 3600 + self.newtime.minute * 60 + self.newtime.second 
+                new_seconds = seconds + 1
+                new_hour = (new_seconds // 3600) % 24
+                new_minute = (new_seconds % 3600) // 60
+                new_second = new_seconds % 60
+                self.newtime = time(new_hour, new_minute, new_second)
+                self.root.after(1000,self.StartStopwatch)
+    def SetStopwatch(self,bool):
+        if bool == False:
+            self.StartStopwatch()
+        self.stopped_stopwatch = bool
         
 
     def Timer(self):
@@ -120,6 +135,7 @@ class MySmartClock:
         self.stopped_timer = bool
     def ResetTimer(self):
         self.timer_num = time(0,0,0)
+        self.SetTimer(True)
                 
 
 if __name__ == "__main__":

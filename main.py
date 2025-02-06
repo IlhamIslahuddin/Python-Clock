@@ -54,7 +54,7 @@ class MySmartClock:
             
         elif self.screen == "Stopwatch":
             if self.detected_change == False:
-                self.stopwatch = tk.Label(self.root,fg="orange",bg="black",text=self.newtime)
+                self.stopwatch = tk.Label(self.root,fg="orange",bg="black",text=self.newtime,font=("Arial",50,"bold"))
                 self.stopwatch.grid(row=2,column=1,columnspan=3,sticky="nsew")
             else:
                 self.stopwatch_start_button = tk.Button(text="START",command=lambda: self.SetStopwatch(False))
@@ -64,19 +64,21 @@ class MySmartClock:
             
         elif self.screen == "Timer":
             if self.detected_change == False:
-                self.timer_label = tk.Label(self.root,fg="orange",bg="black",text=self.timer_num)
-                self.timer_label.grid(row=2,column=1,columnspan=3,sticky="nsew")
+                self.timer_label = tk.Label(self.root,fg="orange",bg="black",text=self.timer_num,font=("Arial",50,"bold"))
+                self.timer_label.grid(row=1,column=1,columnspan=3,sticky="nsew")
             else:
                 self.start_timer = tk.Button(text="START",command=lambda:self.SetTimer(False))
                 self.stop_timer = tk.Button(text="STOP",command=lambda:self.SetTimer(True))
                 self.thirty_sec = tk.Button(text="30s",command=lambda: self.AddTime(30))
                 self.one_min = tk.Button(text="1 min",command=lambda: self.AddTime(60))
+                self.one_hour = tk.Button(text="1 hour",command=lambda: self.AddTime(3600))
                 self.reset_timer = tk.Button(text="RESET",command=self.ResetTimer)
                 self.start_timer.grid(row=2,column=0)
                 self.stop_timer.grid(row=2,column=4)
                 self.thirty_sec.grid(row=3,column=1)
                 self.one_min.grid(row=3,column=2)
-                self.reset_timer.grid(row=3,column=3)
+                self.one_hour.grid(row=3,column=3)
+                self.reset_timer.grid(row=3,column=4)
             
         self.detected_change = False
         self.root.after(1000,self.check_state)

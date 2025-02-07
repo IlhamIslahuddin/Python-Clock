@@ -62,7 +62,8 @@ class MySmartClock:
         self.currenttime_frame.rowconfigure(4,weight=1)
         
         self.timer_num = time(0,0,0)
-        self.newtime = time(0,0,0) #no milliseconds
+        self.newtime = time(0,0,0)
+        self.milliseconds = 0
         self.current_date = tk.Label(self.main_frame,text=(datetime.date.today()).strftime("%d/%m/%Y"),font=("Arial",20,"bold"))
         self.current_date.grid(row=0,column=0,columnspan=3,sticky="nw",padx=20,pady=20)
         self.TimerButton = tk.Button(self.main_frame, text="Timer",command=self.Timer)
@@ -78,7 +79,7 @@ class MySmartClock:
     def CreateTimerScreen(self):
         self.timer_frame.place(relx=0.5,rely=0.5,anchor="center",relheight=0.7,relwidth=0.7)
         self.timer_frame.lift()
-        self.timer_label = tk.Label(self.timer_frame,fg="orange",bg="black",text=self.timer_num,font=("Arial",50,"bold"))
+        self.timer_label = tk.Label(self.timer_frame,fg="orange",bg="black",text=f"{self.timer_num}:{self.milliseconds:03}",font=("Arial",50,"bold"))
         self.timer_label.grid(row=1,column=1,columnspan=3,sticky="nsew")
         self.start_timer = tk.Button(self.timer_frame,text="START",command=lambda:self.SetTimer(False))
         self.stop_timer = tk.Button(self.timer_frame,text="STOP",command=lambda:self.SetTimer(True))
@@ -95,7 +96,7 @@ class MySmartClock:
     def CreateStopwatchScreen(self):
         self.stopwatch_frame.place(relx=0.5,rely=0.5,anchor="center",relheight=0.7,relwidth=0.7)
         self.stopwatch_frame.lift()
-        self.stopwatch = tk.Label(self.stopwatch_frame,fg="orange",bg="black",text=self.newtime,font=("Arial",50,"bold"))
+        self.stopwatch = tk.Label(self.stopwatch_frame,fg="orange",bg="black",text=f"{self.newtime}:{self.milliseconds:03}",font=("Arial",50,"bold"))
         self.stopwatch.grid(row=2,column=1,columnspan=3,sticky="nsew")
         self.stopwatch_start_button = tk.Button(self.stopwatch_frame,text="START",command=lambda: self.SetStopwatch(False))
         self.stopwatch_start_button.grid(row=2,column=0)
@@ -124,66 +125,77 @@ class MySmartClock:
         self.timer_frame.place_forget()
         self.stopwatch_frame.place_forget()
         self.currenttime_frame.place_forget()
+        self.milliseconds = 0
         self.screen = "Stopwatch"
         self.stopped_stopwatch = True
         self.CreateStopwatchScreen()
     def StartStopwatch(self):
         if self.stopped_stopwatch == False:
             if self.screen == "Stopwatch":
-                seconds = self.newtime.hour * 3600 + self.newtime.minute * 60 + self.newtime.second 
-                new_seconds = seconds + 1
-                new_hour = (new_seconds // 3600) % 24
-                new_minute = (new_seconds % 3600) // 60
-                new_second = new_seconds % 60
+                self.milliseconds += 1
+                if self.milliseconds >= 1000:
+                    self.milliseconds = 0
+                    seconds = self.newtime.hour * 3600 + self.newtime.minute * 60 + self.newtime.second + 1
+                else:
+                    seconds = self.newtime.hour * 3600 + self.newtime.minute * 60 + self.newtime.second
+                new_hour = (seconds // 3600) % 24
+                new_minute = (seconds % 3600) // 60
+                new_second = seconds % 60
                 self.newtime = time(new_hour, new_minute, new_second)
-                self.stopwatch.configure(text=self.newtime)
-                self.root.after(1000,self.StartStopwatch)
+                self.stopwatch.configure(text=f"{self.newtime}:{self.milliseconds:03}")
+                self.root.after(1,self.StartStopwatch)
     def SetStopwatch(self,bool):
-        self.stopped_stopwatch = bool
-        if bool == False:
-            self.StartStopwatch()
+        if self.stopped_stopwatch != bool:
+            self.stopped_stopwatch = bool
+            if bool == False:
+                self.StartStopwatch()
     def ResetStopwatch(self):
         self.newtime = time(0,0,0)
         self.stopwatch.configure(text=self.newtime)
         self.SetStopwatch(True)
         
-
     def Timer(self):
         self.timer_frame.grid_forget()
         self.stopwatch_frame.grid_forget()
         self.currenttime_frame.grid_forget()
+        self.milliseconds = 0
         self.screen = "Timer"
         self.stopped_timer = True
         self.CreateTimerScreen()
     def AddTime(self,add_seconds):
-        seconds = self.timer_num.hour * 3600 + self.timer_num.minute * 60 + self.timer_num.second
-        new_seconds = seconds + add_seconds
-        new_hour = (new_seconds // 3600) % 24
-        new_minute = (new_seconds % 3600) // 60
-        new_second = new_seconds % 60
+        seconds = self.timer_num.hour * 3600 + self.timer_num.minute * 60 + self.timer_num.second + add_seconds
+        new_hour = (seconds // 3600) % 24
+        new_minute = (seconds % 3600) // 60
+        new_second = seconds % 60
         self.timer_num = time(new_hour,new_minute,new_second)
-        self.timer_label.configure(text=self.timer_num)
+        self.timer_label.configure(text=f"{self.timer_num}:{self.milliseconds:03}")
     def StartTimer(self):
         if self.stopped_timer == False:
-            total = self.timer_num.hour * 3600 + self.timer_num.minute * 60 + self.timer_num.second
+            self.milliseconds -= 1
+            if self.milliseconds < 0:
+                self.milliseconds = 999
+                total = self.timer_num.hour * 3600 + self.timer_num.minute * 60 + self.timer_num.second - 1
+            else:
+                total = self.timer_num.hour * 3600 + self.timer_num.minute * 60 + self.timer_num.second
             if total <= 0:
+                self.ResetTimer()
                 messagebox.showinfo(message="Timer done!")
             else:
                 if self.screen == "Timer":
-                    total -= 1 #does not account for milliseconds yet
                     new_hour = (total // 3600) % 24
                     new_minute = (total  % 3600) // 60
                     new_second = total  % 60
                     self.timer_num = time(new_hour,new_minute,new_second)
-                    self.timer_label.configure(text=self.timer_num)
-                    self.root.after(1000,self.StartTimer) #no milliseconds
+                    self.timer_label.configure(text=f"{self.timer_num}:{self.milliseconds:03}")
+                    self.root.after(1,self.StartTimer)
     def SetTimer(self,bool):
         self.stopped_timer = bool
         if bool == False:
             self.StartTimer()
     def ResetTimer(self):
         self.timer_num = time(0,0,0)
-        self.timer_label.configure(text=self.timer_num)
+        self.milliseconds = 0
+        self.timer_label.configure(text=f"{self.timer_num}:{self.milliseconds:03}")
         self.SetTimer(True)
                 
 if __name__ == "__main__":

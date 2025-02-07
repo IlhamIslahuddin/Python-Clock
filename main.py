@@ -64,7 +64,9 @@ class MySmartClock:
         self.timer_num = time(0,0,0)
         self.newtime = time(0,0,0)
         self.milliseconds = 0
-        self.current_date = tk.Label(self.main_frame,text=(datetime.date.today()).strftime("%d/%m/%Y"),font=("Arial",20,"bold"))
+        self.welcome = tk.Label(self.main_frame,bg="black",fg="orange",text="Welcome to my Clock App.",font=("Arial",30,"bold"))
+        self.welcome.grid(row=2,column=1,columnspan=3,sticky="new",padx=20,pady=20)
+        self.current_date = tk.Label(self.main_frame,bg="black",fg="orange",text=(datetime.date.today()).strftime("%d/%m/%Y"),font=("Arial",20,"bold"))
         self.current_date.grid(row=0,column=0,columnspan=3,sticky="nw",padx=20,pady=20)
         self.TimerButton = tk.Button(self.main_frame, text="Timer",command=self.Timer)
         self.StopwatchButton = tk.Button(self.main_frame, text="Stopwatch",command=self.Stopwatch)
@@ -80,17 +82,19 @@ class MySmartClock:
         self.timer_frame.place(relx=0.5,rely=0.5,anchor="center",relheight=0.7,relwidth=0.7)
         self.timer_frame.lift()
         self.timer_label = tk.Label(self.timer_frame,fg="orange",bg="black",text=f"{self.timer_num}:{self.milliseconds:03}",font=("Arial",50,"bold"))
-        self.timer_label.grid(row=1,column=1,columnspan=3,sticky="nsew")
+        self.timer_label.grid(row=2,column=1,columnspan=3,sticky="nsew")
         self.start_timer = tk.Button(self.timer_frame,text="START",command=lambda:self.SetTimer(False))
         self.stop_timer = tk.Button(self.timer_frame,text="STOP",command=lambda:self.SetTimer(True))
         self.thirty_sec = tk.Button(self.timer_frame,text="30s",command=lambda: self.AddTime(30))
         self.one_min = tk.Button(self.timer_frame,text="1 min",command=lambda: self.AddTime(60))
+        self.five_min = tk.Button(self.timer_frame,text="5 min",command=lambda: self.AddTime(300))
         self.one_hour = tk.Button(self.timer_frame,text="1 hour",command=lambda: self.AddTime(3600))
         self.reset_timer = tk.Button(self.timer_frame,text="RESET",command=self.ResetTimer)
         self.start_timer.grid(row=2,column=0)
         self.stop_timer.grid(row=2,column=4)
-        self.thirty_sec.grid(row=3,column=1)
-        self.one_min.grid(row=3,column=2)
+        self.thirty_sec.grid(row=3,column=0)
+        self.one_min.grid(row=3,column=1)
+        self.five_min.grid(row=3,column=2)
         self.one_hour.grid(row=3,column=3)
         self.reset_timer.grid(row=3,column=4)
     def CreateStopwatchScreen(self):
@@ -126,6 +130,7 @@ class MySmartClock:
         self.stopwatch_frame.place_forget()
         self.currenttime_frame.place_forget()
         self.milliseconds = 0
+        self.newtime = time(0,0,0)
         self.screen = "Stopwatch"
         self.stopped_stopwatch = True
         self.CreateStopwatchScreen()
@@ -133,7 +138,7 @@ class MySmartClock:
         if self.stopped_stopwatch == False:
             if self.screen == "Stopwatch":
                 self.milliseconds += 1
-                if self.milliseconds >= 1000:
+                if self.milliseconds >= 10:
                     self.milliseconds = 0
                     seconds = self.newtime.hour * 3600 + self.newtime.minute * 60 + self.newtime.second + 1
                 else:
@@ -142,8 +147,8 @@ class MySmartClock:
                 new_minute = (seconds % 3600) // 60
                 new_second = seconds % 60
                 self.newtime = time(new_hour, new_minute, new_second)
-                self.stopwatch.configure(text=f"{self.newtime}:{self.milliseconds:03}")
-                self.root.after(1,self.StartStopwatch)
+                self.stopwatch.configure(text=f"{self.newtime}:{self.milliseconds:01}")
+                self.root.after(100,self.StartStopwatch)
     def SetStopwatch(self,bool):
         if self.stopped_stopwatch != bool:
             self.stopped_stopwatch = bool
@@ -151,7 +156,7 @@ class MySmartClock:
                 self.StartStopwatch()
     def ResetStopwatch(self):
         self.newtime = time(0,0,0)
-        self.stopwatch.configure(text=self.newtime)
+        self.stopwatch.configure(text=f"{self.newtime}:{self.milliseconds:03}")
         self.SetStopwatch(True)
         
     def Timer(self):

@@ -178,7 +178,7 @@ class MySmartClock:
         if self.stopped_timer == False:
             self.milliseconds -= 1
             if self.milliseconds < 0:
-                self.milliseconds = 999
+                self.milliseconds = 10
                 total = self.timer_num.hour * 3600 + self.timer_num.minute * 60 + self.timer_num.second - 1
             else:
                 total = self.timer_num.hour * 3600 + self.timer_num.minute * 60 + self.timer_num.second
@@ -192,7 +192,7 @@ class MySmartClock:
                     new_second = total  % 60
                     self.timer_num = time(new_hour,new_minute,new_second)
                     self.timer_label.configure(text=f"{self.timer_num}:{self.milliseconds:03}")
-                    self.root.after(1,self.StartTimer)
+                    self.root.after(100,self.StartTimer)
     def SetTimer(self,bool):
         self.stopped_timer = bool
         if bool == False:

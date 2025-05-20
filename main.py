@@ -2,7 +2,6 @@ import tkinter as tk
 from tkinter import messagebox
 import datetime
 from datetime import time
-import time as Time
 
 class MySmartClock:
     def __init__(self):
@@ -25,7 +24,6 @@ class MySmartClock:
         self.main_frame.rowconfigure(3,weight=1)
         self.main_frame.rowconfigure(4,weight=1)
         self.timer_frame = tk.Frame(self.main_frame, bg="black")
-        # self.timer_frame.grid(row=0,column=0,sticky="nsew")
         self.timer_frame.columnconfigure(0,weight=1)
         self.timer_frame.columnconfigure(1,weight=1)
         self.timer_frame.columnconfigure(2,weight=1)
@@ -37,7 +35,6 @@ class MySmartClock:
         self.timer_frame.rowconfigure(3,weight=1)
         self.timer_frame.rowconfigure(4,weight=1)
         self.stopwatch_frame = tk.Frame(self.main_frame, bg="black")
-        # self.stopwatch_frame.grid(row=0,column=0,sticky="nsew")
         self.stopwatch_frame.columnconfigure(0,weight=1)
         self.stopwatch_frame.columnconfigure(1,weight=1)
         self.stopwatch_frame.columnconfigure(2,weight=1)
@@ -63,7 +60,6 @@ class MySmartClock:
         
         self.timer_num = time(0,0,0)
         self.newtime = time(0,0,0)
-        self.milliseconds = 0
         self.welcome = tk.Label(self.main_frame,bg="black",fg="orange",text="Welcome to my Clock App.",font=("Arial",30,"bold"))
         self.welcome.grid(row=2,column=1,columnspan=3,sticky="new",padx=20,pady=20)
         self.current_date = tk.Label(self.main_frame,bg="black",fg="orange",text=(datetime.date.today()).strftime("%d/%m/%Y"),font=("Arial",20,"bold"))
@@ -81,7 +77,7 @@ class MySmartClock:
     def CreateTimerScreen(self):
         self.timer_frame.place(relx=0.5,rely=0.5,anchor="center",relheight=0.7,relwidth=0.7)
         self.timer_frame.lift()
-        self.timer_label = tk.Label(self.timer_frame,fg="orange",bg="black",text=f"{self.timer_num}:{self.milliseconds:03}",font=("Arial",50,"bold"))
+        self.timer_label = tk.Label(self.timer_frame,fg="orange",bg="black",text=f"{self.timer_num}",font=("Arial",50,"bold"))
         self.timer_label.grid(row=2,column=1,columnspan=3,sticky="nsew")
         self.start_timer = tk.Button(self.timer_frame,text="START",command=lambda:self.SetTimer(False))
         self.stop_timer = tk.Button(self.timer_frame,text="STOP",command=lambda:self.SetTimer(True))
@@ -100,7 +96,7 @@ class MySmartClock:
     def CreateStopwatchScreen(self):
         self.stopwatch_frame.place(relx=0.5,rely=0.5,anchor="center",relheight=0.7,relwidth=0.7)
         self.stopwatch_frame.lift()
-        self.stopwatch = tk.Label(self.stopwatch_frame,fg="orange",bg="black",text=f"{self.newtime}:{self.milliseconds:03}",font=("Arial",50,"bold"))
+        self.stopwatch = tk.Label(self.stopwatch_frame,fg="orange",bg="black",text=f"{self.newtime}",font=("Arial",50,"bold"))
         self.stopwatch.grid(row=2,column=1,columnspan=3,sticky="nsew")
         self.stopwatch_start_button = tk.Button(self.stopwatch_frame,text="START",command=lambda: self.SetStopwatch(False))
         self.stopwatch_start_button.grid(row=2,column=0)
@@ -129,7 +125,6 @@ class MySmartClock:
         self.timer_frame.place_forget()
         self.stopwatch_frame.place_forget()
         self.currenttime_frame.place_forget()
-        self.milliseconds = 0
         self.newtime = time(0,0,0)
         self.screen = "Stopwatch"
         self.stopped_stopwatch = True
@@ -137,18 +132,13 @@ class MySmartClock:
     def StartStopwatch(self):
         if self.stopped_stopwatch == False:
             if self.screen == "Stopwatch":
-                self.milliseconds += 1
-                if self.milliseconds >= 10:
-                    self.milliseconds = 0
-                    seconds = self.newtime.hour * 3600 + self.newtime.minute * 60 + self.newtime.second + 1
-                else:
-                    seconds = self.newtime.hour * 3600 + self.newtime.minute * 60 + self.newtime.second
+                seconds = self.newtime.hour * 3600 + self.newtime.minute * 60 + self.newtime.second + 1
                 new_hour = (seconds // 3600) % 24
                 new_minute = (seconds % 3600) // 60
                 new_second = seconds % 60
                 self.newtime = time(new_hour, new_minute, new_second)
-                self.stopwatch.configure(text=f"{self.newtime}:{self.milliseconds:01}")
-                self.root.after(100,self.StartStopwatch)
+                self.stopwatch.configure(text=f"{self.newtime}")
+                self.root.after(1000,self.StartStopwatch)
     def SetStopwatch(self,bool):
         if self.stopped_stopwatch != bool:
             self.stopped_stopwatch = bool
@@ -156,14 +146,13 @@ class MySmartClock:
                 self.StartStopwatch()
     def ResetStopwatch(self):
         self.newtime = time(0,0,0)
-        self.stopwatch.configure(text=f"{self.newtime}:{self.milliseconds:03}")
+        self.stopwatch.configure(text=f"{self.newtime}")
         self.SetStopwatch(True)
         
     def Timer(self):
         self.timer_frame.grid_forget()
         self.stopwatch_frame.grid_forget()
         self.currenttime_frame.grid_forget()
-        self.milliseconds = 0
         self.screen = "Timer"
         self.stopped_timer = True
         self.CreateTimerScreen()
@@ -173,15 +162,11 @@ class MySmartClock:
         new_minute = (seconds % 3600) // 60
         new_second = seconds % 60
         self.timer_num = time(new_hour,new_minute,new_second)
-        self.timer_label.configure(text=f"{self.timer_num}:{self.milliseconds:03}")
+        self.timer_label.configure(text=f"{self.timer_num}")
+        self.timer_num = time(new_hour,new_minute,(new_second+1))
     def StartTimer(self):
         if self.stopped_timer == False:
-            self.milliseconds -= 1
-            if self.milliseconds < 0:
-                self.milliseconds = 10
-                total = self.timer_num.hour * 3600 + self.timer_num.minute * 60 + self.timer_num.second - 1
-            else:
-                total = self.timer_num.hour * 3600 + self.timer_num.minute * 60 + self.timer_num.second
+            total = self.timer_num.hour * 3600 + self.timer_num.minute * 60 + self.timer_num.second - 1
             if total <= 0:
                 self.ResetTimer()
                 messagebox.showinfo(message="Timer done!")
@@ -191,16 +176,15 @@ class MySmartClock:
                     new_minute = (total  % 3600) // 60
                     new_second = total  % 60
                     self.timer_num = time(new_hour,new_minute,new_second)
-                    self.timer_label.configure(text=f"{self.timer_num}:{self.milliseconds:03}")
-                    self.root.after(100,self.StartTimer)
+                    self.timer_label.configure(text=f"{self.timer_num}")
+                    self.root.after(1000,self.StartTimer)
     def SetTimer(self,bool):
         self.stopped_timer = bool
         if bool == False:
             self.StartTimer()
     def ResetTimer(self):
         self.timer_num = time(0,0,0)
-        self.milliseconds = 0
-        self.timer_label.configure(text=f"{self.timer_num}:{self.milliseconds:03}")
+        self.timer_label.configure(text=f"{self.timer_num}")
         self.SetTimer(True)
                 
 if __name__ == "__main__":
